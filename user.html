@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Services</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <a href="index.html">
+            <img src="Images/Logo.jpg" alt="Bank of Agile Logo" class="logo">
+        </a>
+        <a href="index.html" class="header-title-link">
+            <h1 class="header-title">BANK OF AGILE</h1>
+        </a>
+        <nav class="menu-container">
+            <button class="menu-button" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="dropdown-content">
+                <a href="index.html">Home</a>
+                <a href="registration.html">Registration</a>
+                <a href="user.html">Banking Services</a>
+                <a href="ourstory.html">Our Story</a>
+                <a href="customersupport.html">Customer Support</a>
+                <a href="#" onclick="clearSessionStorage()">Logout</a>
+            </div>
+        </nav>
+    </header>
+    <div class="center-container">
+        <h1>Our Banking Services</h1>
+        <div class="balance-display" id="balance-display">Your Balance: Loading...</div>
+        <div class="services-container">
+            <div class="service-card" onclick="displayBalance()">
+                <i class="fas fa-university fa-3x"></i>
+                <h2>Check Balance</h2>
+                <p>View your account balance in real-time with just one click.</p>
+            </div>
+        <div class="service-card" onclick="showPopup('deposit')">
+            <i class="fas fa-piggy-bank fa-3x"></i>
+            <h2>Deposit Funds</h2>
+            <p>Deposit funds into your account quickly and securely.</p>
+        </div>
+        <div class="service-card" onclick="showPopup('withdraw')">
+            <i class="fas fa-money-bill-wave fa-3x"></i>
+            <h2>Withdraw Funds</h2>
+            <p>Withdraw money from your account whenever you need it.</p>
+        </div>
+        <div class="service-card" onclick="showPopup('transfer')">
+            <i class="fas fa-exchange-alt fa-3x"></i>
+            <h2>Transfer Funds</h2>
+            <p>Transfer money between your accounts or to other banks easily and securely.</p>
+        </div>
+        <div class="service-card" onclick="window.location.href='dashboard.html'">
+            <i class="fas fa-file-alt fa-3x"></i>
+            <h2>View Statements</h2>
+            <p>Access your account statements and transaction history anytime.</p>
+        </div>
+        <div class="service-card" onclick="window.location.href='customersupport.html'">
+            <i class="fas fa-headset fa-3x"></i>
+            <h2>Contact Support</h2>
+            <p>Get in touch with our customer support for any assistance you need.</p>
+        </div>
+    </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <div id="popup-form"></div>
+        </div>
+    </div>
+    <script>
+         // Global variable to hold the balance
+        const userId =parseInt(localStorage.getItem('userId'))
+        // Function to execute when the DOM content is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            var userId = parseInt(localStorage.getItem('userId'));
+            if (!userId) {
+                // Handle scenario where userId is not found in localStorage
+                console.error('User ID not found in localStorage');
+                window.location.href = 'Index.html';
+                // Example: Redirect to login page
+                // window.location.href = 'login.html';
+            } else {
+                getAccountId(); // Retrieve and use accountId
+                let balance = parseFloat(sessionStorage.getItem('account'));
+            }
+        });
+
+        function getAccountId() {
+            const accountId = parseInt(localStorage.getItem('accountId'));
+            const userId = parseInt(localStorage.getItem('userId'));
+            if (!isNaN(userId)) {
+                const url = `http://97.131.128.8:8080/accounts/user-accounts/${userId}`;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Account data received:', data);
+                        if (data.balance !== undefined) {
+                            // Use balance from data if needed
+                            const balance = data.balance;
+                            console.log('Account balance:', balance);
+                            updateBalanceUI(balance); // Update UI with balance if needed
+                        } else {
+                            console.error('Balance data not found in response');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching account data:', error);
+                        // Handle errors here, e.g., display error message to the user
+                    });
+            } else {
+                console.error('Account ID in localStorage is NaN or not set correctly');
+                // Handle the scenario where accountId is not valid
+                // For example, redirect to a login or account creation page
+                // window.location.href = 'login.html'; // Example redirect
+            }
+        }
+
+        function updateBalanceUI(balance) {
+            // Example function to update UI with balance
+            document.getElementById('balance-display').innerText = `Your Balance: $${balance.toLocaleString()}`;
+        }
+
+        // Function to clear session storage
+        function clearSessionStorage() {
+            localStorage.clear();
+            alert('Session Logged out successfully.');
+            window.location.href = 'Index.html';
+        }
+
+        // Function to display balance
+        function displayBalance() {
+            const userId = parseInt(localStorage.getItem('userId'));
+            const accountId = parseInt(localStorage.getItem('accountId'));
+
+
+            const url = `http://97.131.128.8:8080/accounts/user-accounts/${userId}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('User data received:', data);
+                    if (data.balance !== undefined) {
+                        const balance = data.balance;
+                        console.log('User balance:', balance);
+                        sessionStorage.setItem('account', data.balance);
+
+                        // Update UI with balance
+                        document.getElementById('balance-display').innerText = `Your Balance: $${balance.toLocaleString()}`;
+                    } else {
+                        console.error('Balance data not found in response');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    // Handle errors here, e.g., display error message to the user
+                });
+        }
+
+        // Function to handle depositing funds
+        function depositFunds() {
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            const userId = parseInt(localStorage.getItem('userId'));
+            const url = `http://97.131.128.8:8080/accounts/${userId}`;
+            const oldBalance = parseFloat(sessionStorage.getItem('account'));
+
+            if (!isNaN(amount) && amount > 0) {
+                const accountDataToUpdate = {
+                    balance: oldBalance + amount // Update balance locally
+                };
+
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(accountDataToUpdate),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Updated account data:', data);
+                        balance = data.balance
+                        displayBalance(); // Update UI with balance after successful update
+                        closePopup(); // Close the deposit popup or modal
+                    })
+                    .catch(error => {
+                        console.error('Error updating account data:', error);
+                        // Handle errors here, e.g., display error message to the user
+                    });
+            }
+        }
+
+        // Function to handle withdrawing funds
+        function withdrawFunds() {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const accountId = parseInt(localStorage.getItem('userId'));
+            const url = `http://97.131.128.8:8080/accounts/${userId}`;
+            const oldBalance = parseFloat(sessionStorage.getItem('account'));
+
+            if (!isNaN(amount) && amount > 0 && amount <= oldBalance) {
+
+                const accountDataToUpdate = {
+                    balance: oldBalance - amount
+                };
+
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(accountDataToUpdate),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Updated account data:', data);
+                        displayBalance(); // Update UI with balance after successful update
+                        closePopup(); // Close the withdraw popup or modal
+                    })
+                    .catch(error => {
+                        console.error('Error updating account data:', error);
+                        // Handle errors here, e.g., display error message to the user
+                    });
+            }
+        }
+
+        // Function to show popup for deposit, withdraw, or transfer
+        function showPopup(action) {
+            const popup = document.getElementById('popup');
+            const popupForm = document.getElementById('popup-form');
+            popupForm.innerHTML = '';
+
+            let formContent = '';
+
+            if (action === 'deposit') {
+                formContent = `
+                    <h2>Deposit Funds</h2>
+                    <label for="deposit-amount">Amount:</label>
+                    <input type="number" id="deposit-amount" min="0" step="0.01">
+                    <button onclick="depositFunds()">Submit</button>
+                `;
+            } else if (action === 'withdraw') {
+                formContent = `
+                    <h2>Withdraw Funds</h2>
+                    <label for="withdraw-amount">Amount:</label>
+                    <input type="number" id="withdraw-amount" min="0" step="0.01">
+                    <button onclick="withdrawFunds()">Submit</button>
+                `;
+            } else if (action === 'transfer') {
+                formContent = `
+                    <h2>Transfer Funds</h2>
+                    <label for="transfer-amount">Amount:</label>
+                    <input type="number" id="transfer-amount" min="0" step="0.01">
+                    <label for="transfer-account">Account Number:</label>
+                    <input type="text" id="transfer-account">
+                    <button onclick="transferFunds()">Submit</button>
+                `;
+            } 
+
+            popupForm.innerHTML = formContent;
+            popup.style.display = 'block';
+        }
+
+        // Function to close popup
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        function transferFunds() {
+            const transferAmount = parseFloat(document.getElementById('transfer-amount').value);
+            const transferToAccount = document.getElementById('transfer-account').value;
+            const userId = parseInt(localStorage.getItem('userId'));
+            const url = `http://97.131.128.8:8080/accounts/${userId}`;
+            const oldBalance = parseFloat(sessionStorage.getItem('account'));
+
+            if (!isNaN(transferAmount) && transferAmount > 0 && transferAmount <= oldBalance) {
+                // Deduct amount from sender's account
+                const accountDataToUpdate = {
+                    balance: oldBalance - transferAmount
+                };
+
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(accountDataToUpdate),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Updated sender account data:', data);
+                        displayBalance(); // Update UI with sender's balance after successful update
+                    })
+                    .catch(error => {
+                        console.error('Error updating sender account data:', error);
+                        // Handle errors here, e.g., display error message to the user
+                    });
+
+                // Fetch receiver's account data
+                const urlReceiver = `http://97.131.128.8:8080/accounts/${transferToAccount}`;
+
+                fetch(urlReceiver)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Receiver account data received:', data);
+                        if (data.balance !== undefined) {
+                            const receiverBalance = data.balance;
+                            const updatedReceiverBalance = receiverBalance + transferAmount;
+
+                            // Update receiver's account with new balance
+                            const receiverAccountDataToUpdate = {
+                                balance: updatedReceiverBalance
+                            };
+
+                            fetch(urlReceiver, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(receiverAccountDataToUpdate),
+                            })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    console.log('Updated receiver account data:', data);
+                                    closePopup(); // Close the transfer popup or modal
+                                })
+                                .catch(error => {
+                                    console.error('Error updating receiver account data:', error);
+                                    // Handle errors here, e.g., display error message to the user
+                                });
+                        } else {
+                            console.error('Balance data not found for receiver');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching receiver account data:', error);
+                        // Handle errors here, e.g., display error message to the user
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
